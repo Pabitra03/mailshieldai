@@ -1,0 +1,143 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL ────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: mailshield-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mailshield}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mailshield_dev_2024}
+      POSTGRES_DB: ${POSTGRES_DB:-mailshieldai}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mailshield}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mailshield-net
+
+  # ── Redis (event bus — standing in for Kafka) ─────────
+  redis:
+    image: redis:7-alpine
+    container_name: mailshield-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mailshield-net
+
+  # ── Neo4j (campaign graph — real, not stubbed) ────────
+  neo4j:
+    image: neo4j:5-community
+    container_name: mailshield-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-mailshield_neo4j_2024}
+      NEO4J_PLUGINS: '["apoc"]'
+    ports:
+      - "7474:7474"   # browser
+      - "7687:7687"   # bolt
+    volumes:
+      - neo4j-data:/data
+    healthcheck:
+      test: ["CMD", "neo4j", "status"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    networks:
+      - mailshield-net
+
+  # ── MinIO (evidence object store — WORM stand-in) ────
+  minio:
+    image: minio/minio:latest
+    container_name: mailshield-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-mailshield}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-mailshield_minio_2024}
+    ports:
+      - "9000:9000"   # API
+      - "9001:9001"   # console
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mailshield-net
+
+  # ── Backend (FastAPI orchestrator) ────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mailshield-backend
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./geo-intel:/app/geo_intel_module
+      - ./evidence-vault:/app/evidence_vault_module
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    networks:
+      - mailshield-net
+
+  # ── ML Service (model inference) ──────────────────────
+  ml-service:
+    build:
+      context: ./ml
+      dockerfile: Dockerfile
+    container_name: mailshield-ml
+    env_file: .env
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./ml:/app
+    networks:
+      - mailshield-net
+
+  # ── Frontend (Vite dev server) ────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mailshield-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - mailshield-net
+
+volumes:
+  pg-data:
+  redis-data:
+  neo4j-data:
+  minio-data:
+
+networks:
+  mailshield-net:
+    driver: bridge
