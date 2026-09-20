@@ -13,10 +13,6 @@ venv/
 env/
 
 # ── ML models & data ───────────────────────────────────
-ml/models/*.pkl
-ml/models/*.pt
-ml/models/*.bin
-ml/models/intent_classifier/
 ml/data/raw_eml/
 ml/data/brand_logos/
 ml/data/*.csv
@@ -25,6 +21,10 @@ ml/data/phishing_pot/
 ml/data/enron_clean/
 *.h5
 *.onnx
+!ml/models/
+!ml/models/*.pkl
+!ml/models/intent_classifier/
+!ml/models/intent_classifier/*.pkl
 
 # ── GeoIP databases ────────────────────────────────────
 *.mmdb
