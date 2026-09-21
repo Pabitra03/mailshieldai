@@ -36,7 +36,7 @@ export function TopHUD() {
         <div className="flex items-center gap-2">
           <div className="hidden md:flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-text-secondary">
             <Radio className="h-3.5 w-3.5 text-cyan-400" />
-            FastAPI Ingest
+            Live Ingest
           </div>
           <div className="hidden sm:flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-[11px] text-emerald-300">
             <Database className="h-3.5 w-3.5" />

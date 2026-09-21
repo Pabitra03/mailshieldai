@@ -1,13 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import {
-  certificatePdfUrl,
-  escalateCase,
-  getCase,
-  reportPdfUrl,
-  reviewCase,
-} from '../api/client';
+import { downloadCertificatePdf, downloadForensicPdf, escalateCase, getCase, reviewCase } from '../api/client';
 import { RiskGauge } from '../components/RiskGauge';
 import type { CaseDetailData } from '../types';
 import { countryFlag, getVerdictBadge, hopIp, normalizeShap } from '../utils/cn';
@@ -60,12 +54,28 @@ export function CaseDetail() {
           <p className="mt-1 text-sm text-text-secondary">{data.sender}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <a className="btn-secondary py-2 text-sm" href={certificatePdfUrl(data.id)}>
+          <button
+            type="button"
+            className="btn-secondary py-2 text-sm"
+            onClick={() => {
+              void downloadCertificatePdf(data.id).catch((err) =>
+                addToast({ type: 'error', title: 'Certificate failed', message: err instanceof Error ? err.message : '' }),
+              );
+            }}
+          >
             BSA §63(4) PDF
-          </a>
-          <a className="btn-primary py-2 text-sm" href={reportPdfUrl(data.id)}>
+          </button>
+          <button
+            type="button"
+            className="btn-primary py-2 text-sm"
+            onClick={() => {
+              void downloadForensicPdf(data.id).catch((err) =>
+                addToast({ type: 'error', title: 'Report failed', message: err instanceof Error ? err.message : '' }),
+              );
+            }}
+          >
             Forensic PDF
-          </a>
+          </button>
         </div>
       </div>
 

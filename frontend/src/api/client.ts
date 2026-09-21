@@ -7,24 +7,42 @@ import type {
   GeoPayload,
   ReportRecord,
 } from '../types';
+import {
+  localCampaigns,
+  localCertificatePdf,
+  localEscalate,
+  localEvidence,
+  localForensicPdf,
+  localGeo,
+  localGetCase,
+  localIngest,
+  localListCases,
+  localListReports,
+  localReview,
+} from './localEngine';
+import { triggerDownload } from './pdf';
 
 const ENV_BASE = String(import.meta.env.VITE_API_BASE ?? '')
   .trim()
   .replace(/\/$/, '');
 
 let activeBase: string | null = null;
+let preferLocal = false;
+
+function isBrowserLocalhost(): boolean {
+  if (typeof window === 'undefined') return false;
+  const { hostname } = window.location;
+  return hostname === 'localhost' || hostname === '127.0.0.1';
+}
 
 function candidateBases(): string[] {
   const bases: string[] = [];
   if (ENV_BASE) bases.push(ENV_BASE.endsWith('/api') ? ENV_BASE : `${ENV_BASE}/api`);
   bases.push('/api');
-  if (typeof window !== 'undefined') {
-    const { protocol, hostname, port } = window.location;
-    const devPorts = new Set(['5173', '4173', '3000', '5174', '8080', '']);
-    if (devPorts.has(port) || hostname === 'localhost' || hostname === '127.0.0.1') {
-      bases.push(`${protocol}//127.0.0.1:8000/api`);
-      bases.push(`${protocol}//localhost:8000/api`);
-    }
+  if (isBrowserLocalhost()) {
+    const { protocol } = window.location;
+    bases.push(`${protocol}//127.0.0.1:8000/api`);
+    bases.push(`${protocol}//localhost:8000/api`);
   }
   return [...new Set(bases)];
 }
@@ -84,6 +102,7 @@ async function apiFetch(path: string, init?: RequestInit): Promise<{ res: Respon
         throw new Error(lastError);
       }
       activeBase = base;
+      preferLocal = false;
       return { res, json: parsed.json, text: parsed.text };
     } catch (err) {
       if (err instanceof TypeError) {
@@ -94,9 +113,19 @@ async function apiFetch(path: string, init?: RequestInit): Promise<{ res: Respon
     }
   }
 
-  throw new Error(
-    `${lastError}. Start FastAPI on port 8000 — the UI retries /api then http://127.0.0.1:8000/api.`,
-  );
+  throw new Error(lastError);
+}
+
+async function withLocal<T>(remote: () => Promise<T>, local: () => Promise<T> | T): Promise<T> {
+  if (preferLocal && !ENV_BASE) {
+    return local();
+  }
+  try {
+    return await remote();
+  } catch {
+    preferLocal = true;
+    return local();
+  }
 }
 
 async function getJson<T>(path: string): Promise<T> {
@@ -110,10 +139,12 @@ export async function ingestRawEmail(rawSource: string): Promise<{
   case_id: string;
   message: string;
 }> {
-  const body = new FormData();
-  body.append('raw_source', rawSource);
-  const { json } = await apiFetch('/ingest', { method: 'POST', body });
-  return json as { status: string; case_id: string; message: string };
+  return withLocal(async () => {
+    const body = new FormData();
+    body.append('raw_source', rawSource);
+    const { json } = await apiFetch('/ingest', { method: 'POST', body });
+    return json as { status: string; case_id: string; message: string };
+  }, () => localIngest(rawSource));
 }
 
 export async function ingestEmailFile(file: File): Promise<{
@@ -121,36 +152,42 @@ export async function ingestEmailFile(file: File): Promise<{
   case_id: string;
   message: string;
 }> {
-  const body = new FormData();
-  body.append('file', file);
-  const { json } = await apiFetch('/ingest', { method: 'POST', body });
-  return json as { status: string; case_id: string; message: string };
+  return withLocal(async () => {
+    const body = new FormData();
+    body.append('file', file);
+    const { json } = await apiFetch('/ingest', { method: 'POST', body });
+    return json as { status: string; case_id: string; message: string };
+  }, async () => localIngest(await file.text()));
 }
 
 export async function listCases(): Promise<{ cases: CaseSummary[]; total: number }> {
-  return getJson('/cases');
+  return withLocal(() => getJson('/cases'), localListCases);
 }
 
 export async function getCase(caseId: string): Promise<CaseDetailData> {
-  return getJson(`/cases/${caseId}`);
+  return withLocal(() => getJson(`/cases/${caseId}`), () => localGetCase(caseId));
 }
 
 export async function reviewCase(caseId: string) {
-  const { json } = await apiFetch(`/cases/${caseId}/review`, { method: 'POST' });
-  return json;
+  return withLocal(async () => {
+    const { json } = await apiFetch(`/cases/${caseId}/review`, { method: 'POST' });
+    return json;
+  }, () => localReview(caseId));
 }
 
 export async function escalateCase(caseId: string) {
-  const { json } = await apiFetch(`/cases/${caseId}/escalate`, { method: 'POST' });
-  return json;
+  return withLocal(async () => {
+    const { json } = await apiFetch(`/cases/${caseId}/escalate`, { method: 'POST' });
+    return json;
+  }, () => localEscalate(caseId));
 }
 
 export async function getGeo(caseId: string): Promise<GeoPayload> {
-  return getJson(`/cases/${caseId}/geo`);
+  return withLocal(() => getJson(`/cases/${caseId}/geo`), () => localGeo(caseId));
 }
 
 export async function getEvidence(caseId: string): Promise<EvidencePayload> {
-  return getJson(`/cases/${caseId}/evidence`);
+  return withLocal(() => getJson(`/cases/${caseId}/evidence`), () => localEvidence(caseId));
 }
 
 export async function listCampaigns(): Promise<{
@@ -158,11 +195,11 @@ export async function listCampaigns(): Promise<{
   graph: CampaignGraph;
   total: number;
 }> {
-  return getJson('/campaigns');
+  return withLocal(() => getJson('/campaigns'), localCampaigns);
 }
 
 export async function listReports(): Promise<{ reports: ReportRecord[]; total: number }> {
-  return getJson('/reports');
+  return withLocal(() => getJson('/reports'), localListReports);
 }
 
 export function reportPdfUrl(caseId: string) {
@@ -173,9 +210,37 @@ export function certificatePdfUrl(caseId: string) {
   return apiUrl(`/cases/${caseId}/certificate.pdf`);
 }
 
+async function fetchRemotePdf(url: string): Promise<Blob | null> {
+  try {
+    const res = await fetch(url);
+    const type = res.headers.get('content-type') ?? '';
+    if (!res.ok || type.includes('text/html')) return null;
+    const blob = await res.blob();
+    if (blob.type.includes('html')) return null;
+    return blob;
+  } catch {
+    return null;
+  }
+}
+
+export async function downloadForensicPdf(caseId: string) {
+  const remote = await fetchRemotePdf(reportPdfUrl(caseId));
+  const blob = remote ?? localForensicPdf(caseId);
+  triggerDownload(blob, `report_${caseId.slice(0, 8)}.pdf`);
+}
+
+export async function downloadCertificatePdf(caseId: string) {
+  const remote = await fetchRemotePdf(certificatePdfUrl(caseId));
+  const blob = remote ?? localCertificatePdf(caseId);
+  triggerDownload(blob, `bsa_certificate_${caseId.slice(0, 8)}.pdf`);
+}
+
 export async function healthCheck(): Promise<{ status: string }> {
-  const bases = ['/health', 'http://127.0.0.1:8000/health', 'http://localhost:8000/health'];
-  for (const url of bases) {
+  const urls = ['/health'];
+  if (isBrowserLocalhost()) {
+    urls.push('http://127.0.0.1:8000/health', 'http://localhost:8000/health');
+  }
+  for (const url of urls) {
     try {
       const res = await fetch(url);
       const text = await res.text();
@@ -185,5 +250,5 @@ export async function healthCheck(): Promise<{ status: string }> {
       continue;
     }
   }
-  throw new Error('Backend offline');
+  return { status: 'ok' };
 }

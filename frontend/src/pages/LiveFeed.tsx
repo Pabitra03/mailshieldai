@@ -92,7 +92,7 @@ export function LiveFeed() {
 
       {error && (
         <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-text-amber">
-          Backend unreachable ({error}). The console now retries FastAPI at :8000 if /api returns HTML.
+          Case feed unavailable ({error}). Retry ingest, or check VITE_API_BASE if a remote API is configured.
           <button
             type="button"
             className="ml-3 underline"

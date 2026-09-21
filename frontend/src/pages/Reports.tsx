@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { certificatePdfUrl, listCases, listReports, reportPdfUrl } from '../api/client';
+import { downloadCertificatePdf, downloadForensicPdf, listCases, listReports } from '../api/client';
 import type { CaseSummary, ReportRecord } from '../types';
 import { formatDate, getVerdictBadge } from '../utils/cn';
 
@@ -58,12 +58,24 @@ export function Reports() {
                 <span className="stat-pill">{current.origin_country || 'origin n/a'}</span>
               </div>
               <div className="mt-6 flex flex-wrap gap-3">
-                <a className="btn-primary" href={certificatePdfUrl(current.id)} onClick={() => window.setTimeout(refreshReports, 800)}>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => {
+                    void downloadCertificatePdf(current.id).then(() => refreshReports());
+                  }}
+                >
                   Download BSA §63(4)
-                </a>
-                <a className="btn-secondary" href={reportPdfUrl(current.id)} onClick={() => window.setTimeout(refreshReports, 800)}>
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => {
+                    void downloadForensicPdf(current.id).then(() => refreshReports());
+                  }}
+                >
                   Download Forensic Report
-                </a>
+                </button>
               </div>
             </>
           ) : (
@@ -83,9 +95,16 @@ export function Reports() {
                   {r.report_type} · {formatDate(r.generated_at)} · {r.subject}
                 </p>
               </div>
-              <a className="text-cyan-300" href={r.download_url || reportPdfUrl(r.case_id)}>
+              <button
+                type="button"
+                className="text-cyan-300"
+                onClick={() => {
+                  const run = r.report_type === 'certificate' ? downloadCertificatePdf : downloadForensicPdf;
+                  void run(r.case_id);
+                }}
+              >
                 Download
-              </a>
+              </button>
             </div>
           ))}
         </div>

@@ -82,8 +82,8 @@ export function UploadModal() {
       const message = error instanceof Error ? error.message : 'Ingest failed';
       addToast({
         type: 'error',
-        title: 'Backend ingest failed',
-        message: `${message}. Confirm FastAPI is running on :8000.`,
+        title: 'Ingest failed',
+        message,
       });
       setProgress(null);
     }
