@@ -3,24 +3,9 @@ fastapi==0.115.0
 uvicorn[standard]==0.30.6
 python-multipart==0.0.9
 
-# ── Database ────────────────────────────────────────────
-sqlalchemy[asyncio]==2.0.35
-asyncpg==0.29.0
-psycopg2-binary==2.9.9
-alembic==1.13.2
-
 # ── Validation & serialization ──────────────────────────
 pydantic==2.9.2
 pydantic-settings==2.5.2
-
-# ── Redis (event bus) ──────────────────────────────────
-redis[hiredis]==5.1.1
-
-# ── Neo4j (campaign graph) ─────────────────────────────
-neo4j==5.25.0
-
-# ── MinIO (evidence store) ─────────────────────────────
-minio==7.2.9
 
 # ── Email parsing ──────────────────────────────────────
 python-dateutil==2.9.0
