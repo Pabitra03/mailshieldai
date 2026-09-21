@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Layout, ToastHost, UploadModal } from './components';
+import { useAppStore } from './hooks/useAppStore';
 import { LandingPage } from './pages/LandingPage';
 import { LiveFeed } from './pages/LiveFeed';
 import { Overview } from './pages/Overview';
@@ -10,6 +12,13 @@ import { Evidence } from './pages/Evidence';
 import { Reports } from './pages/Reports';
 
 export default function App() {
+  const theme = useAppStore((s) => s.theme);
+  const setTheme = useAppStore((s) => s.setTheme);
+
+  useEffect(() => {
+    setTheme(theme);
+  }, [setTheme, theme]);
+
   return (
     <BrowserRouter>
       <Routes>

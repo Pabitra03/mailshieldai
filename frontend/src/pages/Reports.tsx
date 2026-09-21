@@ -39,7 +39,7 @@ export function Reports() {
               key={c.id}
               type="button"
               onClick={() => setSelected(c.id)}
-              className={`w-full rounded-xl px-3 py-2 text-left text-sm ${selected === c.id ? 'bg-cyan-500/15 text-white' : 'text-text-secondary hover:bg-white/5'}`}
+              className={`w-full rounded-xl px-3 py-2 text-left text-sm ${selected === c.id ? 'bg-cyan-500/15 text-text-primary' : 'text-text-secondary hover:bg-white/5'}`}
             >
               <p className="truncate">{c.subject || '(No Subject)'}</p>
               <p className="text-xs text-text-muted">{c.verdict} · {(c.risk_score ?? 0).toFixed(1)}</p>
@@ -78,7 +78,7 @@ export function Reports() {
           {reports.map((r) => (
             <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
               <div>
-                <p className="text-white">{r.filename}</p>
+                <p className="text-text-primary">{r.filename}</p>
                 <p className="text-xs text-text-muted">
                   {r.report_type} · {formatDate(r.generated_at)} · {r.subject}
                 </p>

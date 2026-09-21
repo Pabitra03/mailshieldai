@@ -55,7 +55,7 @@ export function Campaigns() {
       </div>
       <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
         <div className="card overflow-hidden p-0">
-          <svg viewBox="0 0 560 420" className="h-[360px] w-full bg-[#07111f] lg:h-[420px]">
+          <svg viewBox="0 0 560 420" className="h-[360px] w-full text-text-secondary lg:h-[420px]" style={{ background: 'var(--map-bg)' }}>
             {graph.links.map((link, i) => {
               const s = layout.byId[String(link.source)];
               const t = layout.byId[String(link.target)];
@@ -65,7 +65,7 @@ export function Campaigns() {
             {layout.nodes.map((n) => (
               <g key={n.id}>
                 <circle cx={n.x} cy={n.y} r={Math.max(6, (n.val ?? 8) / 2)} fill={n.verdict === 'BEC' ? '#f59e0b' : n.verdict === 'Phishing' ? '#ef4444' : '#22d3ee'} />
-                <text x={n.x + 10} y={n.y + 4} fill="#9ab0d6" fontSize="10">
+                <text x={n.x + 10} y={n.y + 4} fill="currentColor" fontSize="10">
                   {(n.subject || n.id).slice(0, 22)}
                 </text>
               </g>

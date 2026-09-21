@@ -48,7 +48,7 @@ export function Evidence() {
               key={c.id}
               type="button"
               onClick={() => setSelected(c.id)}
-              className={`w-full rounded-xl px-3 py-2 text-left text-sm ${selected === c.id ? 'bg-cyan-500/15 text-white' : 'text-text-secondary hover:bg-white/5'}`}
+              className={`w-full rounded-xl px-3 py-2 text-left text-sm ${selected === c.id ? 'bg-cyan-500/15 text-text-primary' : 'text-text-secondary hover:bg-white/5'}`}
             >
               <p className="truncate">{c.subject || c.id.slice(0, 8)}</p>
               <p className="font-mono text-[11px] text-text-muted">{c.id.slice(0, 12)}</p>

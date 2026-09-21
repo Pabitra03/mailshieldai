@@ -28,7 +28,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'fixed inset-y-0 left-0 z-50 flex flex-col border-r border-cyan-500/10 bg-[#070d1c]/95 backdrop-blur-xl transition-all duration-300',
+        'fixed inset-y-0 left-0 z-50 flex flex-col border-r border-cyan-500/10 bg-bg-secondary/95 backdrop-blur-xl transition-all duration-300',
         sidebarCollapsed ? 'w-[76px]' : 'w-[240px]',
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
       )}
@@ -40,7 +40,7 @@ export function Sidebar() {
           </div>
           {!sidebarCollapsed && (
             <div className="min-w-0">
-              <p className="font-display font-bold text-white leading-tight">MailShieldAI</p>
+              <p className="font-display font-bold text-text-primary leading-tight">MailShieldAI</p>
               <p className="text-[10px] uppercase tracking-[0.18em] text-cyan-400/70">SOC Mission Control</p>
             </div>
           )}
@@ -62,8 +62,8 @@ export function Sidebar() {
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
                 cn(
-                  'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-text-secondary hover:text-white hover:bg-white/5 transition-colors',
-                  isActive && 'text-cyan-200 bg-cyan-500/10 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.25)]',
+                  'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors',
+                  isActive && 'text-cyan-500 bg-cyan-500/10 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.25)]',
                   sidebarCollapsed && 'justify-center px-2',
                 )
               }

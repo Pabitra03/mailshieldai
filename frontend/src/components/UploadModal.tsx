@@ -97,9 +97,9 @@ export function UploadModal() {
         <div className="flex items-center justify-between border-b border-white/5 px-5 py-4">
           <div>
             <p className="text-[11px] uppercase tracking-[0.2em] text-cyan-400">Universal Ingest</p>
-            <h2 className="font-display text-lg font-bold text-white">Upload Email (.EML)</h2>
+            <h2 className="font-display text-lg font-bold text-text-primary">Upload Email (.EML)</h2>
           </div>
-          <button type="button" onClick={closeUpload} className="rounded-lg p-2 text-text-muted hover:bg-white/5 hover:text-white" aria-label="Close">
+          <button type="button" onClick={closeUpload} className="rounded-lg p-2 text-text-muted hover:bg-white/5 hover:text-text-primary" aria-label="Close">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -117,7 +117,7 @@ export function UploadModal() {
                       {done ? <CheckCircle className="h-4 w-4" /> : activeStage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm text-white">{PIPELINE_STAGES[Math.min(index, PIPELINE_STAGES.length - 1)].name}</p>
+                      <p className="text-sm text-text-primary">{PIPELINE_STAGES[Math.min(index, PIPELINE_STAGES.length - 1)].name}</p>
                       <p className="text-xs text-text-muted">{stageCopy(stage)}</p>
                     </div>
                     <span className="font-mono text-xs text-text-muted">#{index + 1}</span>
@@ -181,7 +181,7 @@ export function UploadModal() {
                     }}
                     className={cn(
                       'rounded-xl border px-3 py-3 text-left text-xs transition-colors',
-                      active === key ? 'border-cyan-400 bg-cyan-500/10 text-white' : 'border-white/10 text-text-secondary hover:border-cyan-500/30',
+                      active === key ? 'border-cyan-400 bg-cyan-500/10 text-text-primary' : 'border-white/10 text-text-secondary hover:border-cyan-500/30',
                     )}
                   >
                     {EMAIL_PRESETS[key].label}

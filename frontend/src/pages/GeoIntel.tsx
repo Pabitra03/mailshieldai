@@ -62,7 +62,7 @@ export function GeoIntel() {
               key={c.id}
               type="button"
               onClick={() => setSelected(c.id)}
-              className={`w-full rounded-xl px-3 py-2 text-left text-sm ${selected === c.id ? 'bg-cyan-500/15 text-white' : 'hover:bg-white/5 text-text-secondary'}`}
+              className={`w-full rounded-xl px-3 py-2 text-left text-sm ${selected === c.id ? 'bg-cyan-500/15 text-text-primary' : 'hover:bg-white/5 text-text-secondary'}`}
             >
               <p className="truncate">{c.subject || c.id.slice(0, 8)}</p>
               <p className="text-xs text-text-muted">
@@ -73,7 +73,7 @@ export function GeoIntel() {
           {cases.length === 0 && <p className="p-3 text-sm text-text-muted">Ingest a case to trace hops.</p>}
         </div>
         <div className="card overflow-hidden p-0">
-          <svg viewBox="0 0 900 420" className="h-[320px] w-full bg-[#07111f] lg:h-[420px]">
+          <svg viewBox="0 0 900 420" className="h-[320px] w-full text-text-primary lg:h-[420px]" style={{ background: 'var(--map-bg)' }}>
             {Array.from({ length: 12 }).map((_, i) => (
               <line key={`v${i}`} x1={(i * 900) / 12} y1="0" x2={(i * 900) / 12} y2="420" stroke="rgba(34,211,238,0.08)" />
             ))}
@@ -90,7 +90,7 @@ export function GeoIntel() {
             {points.map((p, i) => (
               <g key={`${hopIp(p)}-${i}`}>
                 <circle cx={p.x} cy={p.y} r="7" fill={p.is_tor_exit || p.is_tor ? '#a855f7' : p.is_vpn ? '#f59e0b' : '#ef4444'} />
-                <text x={p.x + 10} y={p.y - 8} fill="#e8f1fb" fontSize="11">
+                <text x={p.x + 10} y={p.y - 8} fill="currentColor" fontSize="11">
                   {p.city || p.country}
                 </text>
               </g>
@@ -100,7 +100,7 @@ export function GeoIntel() {
             <p className="text-xs uppercase tracking-[0.16em] text-text-muted">Confidence fusion · {confidence}</p>
             {hops.map((hop, i) => (
               <div key={`${hopIp(hop)}-${i}`} className="flex flex-wrap items-center gap-3 rounded-lg border border-white/5 px-3 py-2 text-sm">
-                <span className="font-mono text-cyan-300">#{hop.hop_index ?? i}</span>
+                <span className="font-mono text-text-accent">#{hop.hop_index ?? i}</span>
                 <span>{hopIp(hop)}</span>
                 <span>{hop.hostname}</span>
                 <span>{hop.country}</span>

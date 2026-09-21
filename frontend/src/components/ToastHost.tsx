@@ -14,10 +14,10 @@ export function ToastHost() {
         <div key={toast.id} className={cn('toast', `toast-${toast.type}`)} role="status">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="font-semibold text-white">{toast.title}</p>
+              <p className="font-semibold text-text-primary">{toast.title}</p>
               {toast.message && <p className="mt-1 text-sm text-text-secondary">{toast.message}</p>}
             </div>
-            <button type="button" onClick={() => removeToast(toast.id)} className="text-text-muted hover:text-white" aria-label="Dismiss">
+            <button type="button" onClick={() => removeToast(toast.id)} className="text-text-muted hover:text-text-primary" aria-label="Dismiss">
               <X className="h-4 w-4" />
             </button>
           </div>

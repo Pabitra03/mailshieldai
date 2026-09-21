@@ -56,7 +56,7 @@ export function LiveFeed() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="flex items-center gap-2 font-display text-2xl font-bold text-white">
+        <h1 className="flex items-center gap-2 font-display text-2xl font-bold text-text-primary">
           <Radio className="h-5 w-5 text-cyan-400" /> Live Threat Feed
         </h1>
         <p className="text-sm text-text-secondary">Real-time telemetry from RFC 822 ingestion and forensic inference.</p>
@@ -91,8 +91,8 @@ export function LiveFeed() {
       </div>
 
       {error && (
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-          Backend unreachable ({error}). Start FastAPI on port 8000 to ingest live cases.
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-text-amber">
+          Backend unreachable ({error}). The console now retries FastAPI at :8000 if /api returns HTML.
           <button
             type="button"
             className="ml-3 underline"
@@ -128,7 +128,7 @@ export function LiveFeed() {
               className="grid grid-cols-1 gap-2 px-4 py-3 text-sm hover:bg-white/[0.04] xl:grid-cols-[70px_1.2fr_1.5fr_140px_120px_120px_90px_90px] xl:items-center"
             >
               <span className="font-mono text-xs text-text-muted">{formatTime(item.created_at)}</span>
-              <span className="truncate text-cyan-100">{item.sender || 'unknown'}</span>
+              <span className="truncate text-text-accent">{item.sender || 'unknown'}</span>
               <span className="flex items-center gap-2 truncate text-text-secondary">
                 {item.subject || '(No Subject)'}
                 {item.is_novel && <span className="badge-novelty">Novel</span>}
@@ -170,7 +170,7 @@ function Metric({
         <p className="text-xs uppercase tracking-[0.16em]">{label}</p>
         {icon}
       </div>
-      <p className="mt-2 font-display text-3xl font-bold text-white">{value}</p>
+      <p className="mt-2 font-display text-3xl font-bold text-text-primary">{value}</p>
       <p className="mt-1 text-xs text-text-muted">{hint}</p>
     </div>
   );

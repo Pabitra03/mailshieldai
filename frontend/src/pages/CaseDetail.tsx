@@ -56,7 +56,7 @@ export function CaseDetail() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-[11px] uppercase tracking-[0.2em] text-cyan-400">Case workbench</p>
-          <h1 className="font-display text-2xl font-bold text-white">{data.subject || '(No Subject)'}</h1>
+          <h1 className="font-display text-2xl font-bold text-text-primary">{data.subject || '(No Subject)'}</h1>
           <p className="mt-1 text-sm text-text-secondary">{data.sender}</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -81,7 +81,7 @@ export function CaseDetail() {
           <AuthBadge label="DMARC" value={data.dmarc_result} />
           <div className="card py-4 sm:col-span-3">
             <p className="text-xs uppercase tracking-[0.16em] text-text-muted">Origin</p>
-            <p className="mt-2 text-white">
+            <p className="mt-2 text-text-primary">
               {(() => {
                 const hop = (data.geo_hops ?? []).find((h) => h.country && h.country !== 'Private') ?? (data.geo_hops ?? [])[0];
                 const country = hop?.country || data.origin_country;

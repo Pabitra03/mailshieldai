@@ -15,6 +15,7 @@ import {
 import { EMAIL_PRESETS, PIPELINE_STAGES, type PresetKey } from '../data/presets';
 import { useAppStore } from '../hooks/useAppStore';
 import { cn } from '../utils/cn';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { RiskGauge } from '../components/RiskGauge';
 
 const ENGINES = [
@@ -84,7 +85,7 @@ export function LandingPage() {
   return (
     <div className="min-h-screen bg-bg-primary text-text-primary bg-grid-pattern">
       <div className="pointer-events-none absolute inset-0 bg-radial-glow" />
-      <header className="sticky top-4 z-40 mx-auto flex w-[min(1180px,calc(100%-1.5rem))] items-center justify-between gap-3 rounded-full border border-white/10 bg-[#0b1528]/80 px-3 py-2 backdrop-blur-xl">
+      <header className="sticky top-4 z-40 mx-auto flex w-[min(1180px,calc(100%-1.5rem))] items-center justify-between gap-3 rounded-full border border-white/10 bg-bg-secondary/80 px-3 py-2 backdrop-blur-xl">
         <Link to="/" className="flex items-center gap-2 pl-2">
           <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-cyan-400 to-cyan-700">
             <ShieldCheck className="h-4 w-4 text-white" />
@@ -93,13 +94,14 @@ export function LandingPage() {
           <span className="hidden rounded-full bg-cyan-500/15 px-2 py-0.5 text-[10px] text-cyan-300 lg:inline">SIH26106</span>
         </Link>
         <nav className="hidden min-w-0 items-center gap-4 overflow-x-auto text-sm text-text-secondary xl:flex">
-          <a href="#sandbox" className="hover:text-white">Threat Sandbox</a>
-          <a href="#engines" className="hover:text-white">AI Engines</a>
-          <a href="#geo" className="hover:text-white">Geo Forensics</a>
-          <a href="#evidence" className="hover:text-white">Evidence</a>
-          <a href="#architecture" className="hover:text-white">Architecture</a>
+          <a href="#sandbox" className="hover:text-text-primary">Threat Sandbox</a>
+          <a href="#engines" className="hover:text-text-primary">AI Engines</a>
+          <a href="#geo" className="hover:text-text-primary">Geo Forensics</a>
+          <a href="#evidence" className="hover:text-text-primary">Evidence</a>
+          <a href="#architecture" className="hover:text-text-primary">Architecture</a>
         </nav>
         <div className="flex shrink-0 items-center gap-2">
+          <ThemeToggle />
           <button type="button" onClick={openUpload} className="btn-secondary py-2 px-3 text-sm">Upload Email</button>
           <Link to="/console" className="btn-primary py-2 px-4 text-sm">Console</Link>
         </div>
@@ -110,7 +112,7 @@ export function LandingPage() {
           <p className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-cyan-300">
             <Sparkles className="h-3.5 w-3.5" /> Autonomous Email Security
           </p>
-          <h1 className="mt-6 font-display text-5xl font-bold leading-[0.95] text-white md:text-6xl">
+          <h1 className="mt-6 font-display text-5xl font-bold leading-[0.95] text-text-primary md:text-6xl">
             Detect.
             <br />
             Investigate.
@@ -163,7 +165,7 @@ export function LandingPage() {
                 key={item.id}
                 className={cn(
                   'flex items-center justify-between rounded-xl border px-3 py-2 text-sm',
-                  item.id <= stage ? 'border-cyan-500/20 bg-cyan-500/5 text-white' : 'border-white/5 text-text-muted',
+                  item.id <= stage ? 'border-cyan-500/20 bg-cyan-500/5 text-text-primary' : 'border-white/5 text-text-muted',
                 )}
               >
                 <span>{item.name}</span>
@@ -189,7 +191,7 @@ export function LandingPage() {
               }}
               className={cn('card py-4 text-left card-hover', preset === key && 'border-cyan-400/50 shadow-glow-cyan')}
             >
-              <p className="font-display font-semibold text-white">{EMAIL_PRESETS[key].label}</p>
+              <p className="font-display font-semibold text-text-primary">{EMAIL_PRESETS[key].label}</p>
               <p className="mt-1 text-xs text-text-muted">{EMAIL_PRESETS[key].tag} · {EMAIL_PRESETS[key].origin}</p>
             </button>
           ))}
@@ -220,7 +222,7 @@ export function LandingPage() {
           {ENGINES.map((engine) => (
             <article key={engine.name} className="card card-hover">
               <Cpu className="h-5 w-5 text-cyan-400" />
-              <h3 className="mt-3 font-display text-lg font-semibold text-white">{engine.name}</h3>
+              <h3 className="mt-3 font-display text-lg font-semibold text-text-primary">{engine.name}</h3>
               <p className="mt-2 text-sm text-text-secondary">{engine.detail}</p>
             </article>
           ))}
@@ -239,7 +241,7 @@ export function LandingPage() {
         </div>
         <div id="architecture" className="card">
           <p className="text-xs uppercase tracking-[0.18em] text-text-muted">Hop vector</p>
-          <div className="mt-4 h-48 rounded-xl border border-cyan-500/20 bg-[radial-gradient(circle_at_20%_40%,rgba(6,182,212,0.18),transparent_35%),radial-gradient(circle_at_70%_60%,rgba(239,68,68,0.16),transparent_32%),#07101f]">
+          <div className="mt-4 h-48 rounded-xl border border-cyan-500/20 bg-[radial-gradient(circle_at_20%_40%,rgba(6,182,212,0.18),transparent_35%),radial-gradient(circle_at_70%_60%,rgba(239,68,68,0.16),transparent_32%)]" style={{ backgroundColor: 'var(--map-bg)' }}>
             <svg viewBox="0 0 400 180" className="h-full w-full">
               <path d="M40 120 C 140 20, 260 40, 360 70" fill="none" stroke="#22d3ee" strokeWidth="2" />
               <circle cx="40" cy="120" r="6" fill="#ef4444" />
@@ -268,7 +270,7 @@ export function LandingPage() {
 
       <section className="mx-auto mb-16 w-[min(1180px,calc(100%-1.5rem))] card flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <p className="font-display text-2xl font-bold text-white">SOC impact, not a demo mock</p>
+          <p className="font-display text-2xl font-bold text-text-primary">SOC impact, not a demo mock</p>
           <p className="mt-2 max-w-xl text-sm text-text-secondary">
             Launch the analyst console to ingest real RFC 822 mail, cluster campaigns, and download BSA certificates from the FastAPI backend.
           </p>
