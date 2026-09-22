@@ -130,6 +130,13 @@ export interface CampaignGraphNode {
   origin_asn?: string;
   origin_country?: string;
   created_at?: string;
+  signals?: {
+    asn: string;
+    country: string;
+    sender_domain: string;
+    url_domains: string[];
+    urls: string[];
+  };
   val?: number;
 }
 

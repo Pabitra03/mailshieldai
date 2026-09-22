@@ -8,14 +8,21 @@ router = APIRouter()
 
 from app.models import CASES_DB
 
+# Threat verdicts that indicate malicious/phishing activity
+# ML service returns: "Legitimate", "Low Risk", "Look-alike", "BEC", "Phishing"
+# Local engine may also return "Novel" as verdict
+THREAT_VERDICTS = ("Phishing", "BEC", "Look-alike", "Low Risk", "Novel")
+
 
 def _calculate_threat_level(email_count: int, verdicts: dict) -> str:
     """Calculate threat level based on email count and verdict severity."""
     phishing_count = verdicts.get("Phishing", 0)
     bec_count = verdicts.get("BEC", 0)
     lookalike_count = verdicts.get("Look-alike", 0)
+    low_risk_count = verdicts.get("Low Risk", 0)
+    novel_count = verdicts.get("Novel", 0)
     
-    total_threat = phishing_count * 1 + bec_count * 2 + lookalike_count * 1
+    total_threat = phishing_count * 1 + bec_count * 2 + lookalike_count * 1 + low_risk_count * 1 + novel_count * 1
     if bec_count > 0 or total_threat >= 5:
         return "Critical"
     elif total_threat >= 3:
@@ -54,7 +61,7 @@ def _case_signals(case: dict) -> dict:
 def _build_case_graph() -> dict:
     threat_cases = [
         case for case in CASES_DB.values()
-        if case.get("verdict") in ("Phishing", "BEC", "Look-alike", "Malware", "Low Risk")
+        if case.get("verdict") in THREAT_VERDICTS
     ]
     signals_by_id = {case["id"]: _case_signals(case) for case in threat_cases}
 
@@ -108,7 +115,7 @@ async def list_campaigns():
     for case in CASES_DB.values():
         asn = case.get("origin_asn", "unknown")
         verdict = case.get("verdict", "")
-        if verdict in ("Phishing", "BEC", "Look-alike", "Malware"):
+        if verdict in THREAT_VERDICTS:
             key = asn or "unknown"
             if key not in campaigns:
                 campaigns[key] = {

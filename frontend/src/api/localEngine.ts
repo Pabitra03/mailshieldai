@@ -462,9 +462,24 @@ export function localEvidence(id: string): EvidencePayload {
   };
 }
 
+const THREAT_VERDICTS_LOCAL = ['Phishing', 'BEC', 'Look-alike', 'Low Risk', 'Novel'] as const;
+
+function extractSignals(c: CaseDetailData) {
+  const text = `${c.body_text ?? ''} ${c.body_html ?? ''} ${Object.values(c.headers_json ?? {}).join(' ')}`;
+  const urls = text.match(/https?:\/\/[^\s<>'"]+/g) ?? [];
+  const url_domains = [...new Set(urls.map((u) => u.match(/https?:\/\/([^/\s]+)/)?.[1]?.toLowerCase()).filter(Boolean))];
+  return {
+    asn: c.origin_asn ?? '',
+    country: c.origin_country ?? '',
+    sender_domain: c.sender?.split('@').pop()?.replace(/[>\s]/g, '') ?? '',
+    url_domains,
+    urls: [...new Set(urls)].sort(),
+  };
+}
+
 export function localCampaigns(): { campaigns: Campaign[]; graph: CampaignGraph; total: number } {
   const threat = Object.values(loadCases()).filter((c) =>
-    ['Phishing', 'BEC', 'Look-alike', 'Malware', 'Novel'].includes(c.verdict ?? ''),
+    THREAT_VERDICTS_LOCAL.includes(c.verdict as any),
   );
   const groups = new Map<string, CaseDetailData[]>();
   for (const item of threat) {
@@ -478,7 +493,12 @@ export function localCampaigns(): { campaigns: Campaign[]; graph: CampaignGraph;
       verdicts[v] = (verdicts[v] ?? 0) + 1;
     }
     const bec = verdicts.BEC ?? 0;
-    const threat_level = bec > 0 || items.length >= 3 ? 'Critical' : items.length >= 2 ? 'High' : 'Medium';
+    const phishing = verdicts.Phishing ?? 0;
+    const lookalike = verdicts['Look-alike'] ?? 0;
+    const lowRisk = verdicts['Low Risk'] ?? 0;
+    const novel = verdicts.Novel ?? 0;
+    const totalThreat = phishing * 1 + bec * 2 + lookalike * 1 + lowRisk * 1 + novel * 1;
+    const threat_level = bec > 0 || totalThreat >= 5 ? 'Critical' : totalThreat >= 3 ? 'High' : totalThreat >= 2 ? 'Medium' : 'Low';
     return {
       id: `campaign-${asn}`,
       name: `Cluster: ${asn}`,
@@ -494,26 +514,33 @@ export function localCampaigns(): { campaigns: Campaign[]; graph: CampaignGraph;
     };
   });
 
-  const nodes = threat.map((c) => ({
-    id: c.id,
-    name: c.subject || c.id.slice(0, 8),
-    subject: c.subject,
-    sender: c.sender,
-    verdict: c.verdict ?? undefined,
-    risk_score: c.risk_score ?? undefined,
-    origin_asn: c.origin_asn ?? undefined,
-    origin_country: c.origin_country ?? undefined,
-    created_at: c.created_at,
-    val: Math.max(6, Math.min(24, (c.risk_score ?? 0) / 4)),
-  }));
+  const nodes = threat.map((c) => {
+    const signals = extractSignals(c);
+    return {
+      id: c.id,
+      name: c.subject || c.id.slice(0, 8),
+      subject: c.subject,
+      sender: c.sender,
+      verdict: c.verdict ?? undefined,
+      risk_score: c.risk_score ?? undefined,
+      origin_asn: c.origin_asn ?? undefined,
+      origin_country: c.origin_country ?? undefined,
+      created_at: c.created_at,
+      signals,
+      val: Math.max(6, Math.min(24, (c.risk_score ?? 0) / 4)),
+    };
+  });
   const links = [];
   for (let i = 0; i < threat.length; i += 1) {
     for (let j = i + 1; j < threat.length; j += 1) {
+      const signalsI = extractSignals(threat[i]);
+      const signalsJ = extractSignals(threat[j]);
       const shared = [];
-      if (threat[i].origin_asn && threat[i].origin_asn === threat[j].origin_asn) shared.push(`ASN ${threat[i].origin_asn}`);
-      if (threat[i].origin_country && threat[i].origin_country === threat[j].origin_country) {
-        shared.push(`Origin country ${threat[i].origin_country}`);
-      }
+      if (signalsI.asn && signalsI.asn === signalsJ.asn) shared.push(`ASN ${signalsI.asn}`);
+      if (signalsI.sender_domain && signalsI.sender_domain === signalsJ.sender_domain) shared.push(`Sender domain ${signalsI.sender_domain}`);
+      const sharedDomains = [...new Set(signalsI.url_domains.filter((d) => signalsJ.url_domains.includes(d)))].sort();
+      shared.push(...sharedDomains.map((d) => `URL domain ${d}`));
+      if (signalsI.country && signalsI.country === signalsJ.country) shared.push(`Origin country ${signalsI.country}`);
       if (shared.length) links.push({ source: threat[i].id, target: threat[j].id, shared, strength: shared.length });
     }
   }
