@@ -467,7 +467,7 @@ const THREAT_VERDICTS_LOCAL = ['Phishing', 'BEC', 'Look-alike', 'Low Risk', 'Nov
 function extractSignals(c: CaseDetailData) {
   const text = `${c.body_text ?? ''} ${c.body_html ?? ''} ${Object.values(c.headers_json ?? {}).join(' ')}`;
   const urls = text.match(/https?:\/\/[^\s<>'"]+/g) ?? [];
-  const url_domains = [...new Set(urls.map((u) => u.match(/https?:\/\/([^/\s]+)/)?.[1]?.toLowerCase()).filter(Boolean))];
+  const url_domains = [...new Set(urls.map((u) => u.match(/https?:\/\/([^/\s]+)/)?.[1]?.toLowerCase()).filter((d): d is string => Boolean(d)))];
   return {
     asn: c.origin_asn ?? '',
     country: c.origin_country ?? '',
