@@ -27,7 +27,6 @@ const ENV_BASE = String(import.meta.env.VITE_API_BASE ?? '')
   .replace(/\/$/, '');
 
 let activeBase: string | null = null;
-let preferLocal = false;
 
 function isBrowserLocalhost(): boolean {
   if (typeof window === 'undefined') return false;
