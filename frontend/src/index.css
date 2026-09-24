@@ -620,24 +620,99 @@ html[data-theme='light'] {
     background-color: #f1f5f9 !important;
   }
 
-  /* High contrast colors for text utility classes */
+  /* High contrast colors for text utility classes in light mode */
   .text-red-400 {
     color: #b91c1c !important;
+  }
+  .text-red-300 {
+    color: #991b1b !important;
   }
   .text-amber-400 {
     color: #b45309 !important;
   }
-  .text-cyan-400 {
-    color: #0f766e !important;
+  .text-amber-300 {
+    color: #92400e !important;
   }
-  .text-emerald-400 {
-    color: #047857 !important;
-  }
+  .text-emerald-400,
   .text-emerald-300 {
     color: #047857 !important;
   }
-  .text-violet-400 {
+  .text-violet-400,
+  .text-violet-300 {
     color: #6d28d9 !important;
+  }
+
+  /* All Cyan & Blue text: Deep, readable, high-contrast sapphire/sky tones (5:1+ contrast) */
+  .text-cyan-300 {
+    color: #0284c7 !important; /* Rich sky blue, crystal clear on white */
+  }
+  .text-cyan-400 {
+    color: #0369a1 !important; /* Deep sapphire blue */
+  }
+  .text-cyan-500 {
+    color: #0369a1 !important;
+  }
+  .text-cyan-100,
+  .text-cyan-100\/80,
+  .text-cyan-200 {
+    color: #1e293b !important; /* Dark ink for code blocks and text */
+  }
+
+  /* Interactive Links & Buttons that use cyan */
+  a.text-cyan-300,
+  a.text-cyan-400,
+  button.text-cyan-300,
+  button.text-cyan-400 {
+    color: #0284c7 !important;
+    font-weight: 500;
+  }
+  a.text-cyan-300:hover,
+  a.text-cyan-400:hover,
+  button.text-cyan-300:hover,
+  button.text-cyan-400:hover {
+    color: #075985 !important;
+  }
+
+  /* SVGs using text-cyan */
+  svg.text-cyan-400,
+  svg.text-cyan-300 {
+    color: #0284c7 !important;
+  }
+
+  /* Background tints: soft, clean sky washes instead of dark neon glows */
+  .bg-cyan-500\/5 {
+    background-color: #f0f9ff !important;
+  }
+  .bg-cyan-500\/10,
+  .bg-cyan-500\/15 {
+    background-color: #e0f2fe !important;
+  }
+  .bg-cyan-500\/20 {
+    background-color: #bae6fd !important;
+  }
+
+  /* Border tints in light mode */
+  .border-cyan-500\/10,
+  .border-cyan-500\/20 {
+    border-color: #e2e8f0 !important;
+  }
+  .border-cyan-500\/30,
+  .border-cyan-400,
+  .border-cyan-400\/40,
+  .border-cyan-400\/50,
+  .border-cyan-500\/50 {
+    border-color: #93c5fd !important;
+  }
+
+  /* Remove washed out blue glow blobs on landing page */
+  .bg-radial-glow {
+    display: none !important;
+  }
+  .bg-grid-pattern {
+    background-image:
+      linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px) !important;
+    background-size: 32px 32px !important;
   }
 
   /* Table styling */
@@ -656,8 +731,8 @@ html[data-theme='light'] {
 
   /* Code / Pre elements */
   pre, code:not(.badge-critical):not(.badge-high):not(.badge-medium):not(.badge-low):not(.badge-novelty) {
-    background-color: #f1f5f9;
-    color: #0f172a;
-    border-color: #e2e8f0;
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border-color: #e2e8f0 !important;
   }
 }

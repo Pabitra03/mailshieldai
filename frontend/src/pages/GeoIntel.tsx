@@ -110,7 +110,7 @@ export function GeoIntel() {
               </div>
             ))}
             {selected && (
-              <Link to={`/console/cases/${selected}`} className="inline-block text-sm text-cyan-300">
+              <Link to={`/console/cases/${selected}`} className="inline-block text-sm text-text-accent font-semibold hover:underline">
                 Open case workbench →
               </Link>
             )}

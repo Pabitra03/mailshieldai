@@ -97,7 +97,7 @@ export function Reports() {
               </div>
               <button
                 type="button"
-                className="text-cyan-300"
+                className="text-text-accent font-semibold hover:underline"
                 onClick={() => {
                   const run = r.report_type === 'certificate' ? downloadCertificatePdf : downloadForensicPdf;
                   void run(r.case_id);

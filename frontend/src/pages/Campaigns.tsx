@@ -581,7 +581,7 @@ export function Campaigns() {
                   <Link
                     key={id}
                     to={`/console/cases/${id}`}
-                    className="group/link flex items-center gap-2 font-mono text-xs text-cyan-300 rounded-md px-2 py-1 -mx-2 hover:bg-cyan-500/10 transition-colors duration-150"
+                    className="group/link flex items-center gap-2 font-mono text-xs text-text-accent font-semibold rounded-md px-2 py-1 -mx-2 hover:bg-bg-tertiary transition-colors duration-150"
                   >
                     <span className="h-1 w-1 rounded-full bg-cyan-400 opacity-50 group-hover/link:opacity-100 transition-opacity" />
                     {id.slice(0, 12)}…

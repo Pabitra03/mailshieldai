@@ -70,7 +70,7 @@ export function Evidence() {
                 Verify pulse
               </button>
             </div>
-            <p className="hash-text text-cyan-300">{evidence?.merkle_root || 'No seal yet'}</p>
+            <p className="hash-text text-text-accent font-semibold">{evidence?.merkle_root || 'No seal yet'}</p>
             <p className="mt-2 text-xs text-text-muted">chain_verified: {String(evidence?.chain_verified ?? false)}</p>
             <svg viewBox="0 0 520 180" className="mt-4 w-full">
               <rect x="200" y="12" width="120" height="36" rx="8" fill="#0f1d38" stroke="#22d3ee" />
@@ -119,7 +119,7 @@ export function Evidence() {
                   <tr key={a.name} className="border-t border-white/5">
                     <td className="px-3 py-2">{a.name}</td>
                     <td className="px-3 py-2">
-                      <button type="button" className="hash-text text-cyan-300" onClick={() => copy(a.sha256)}>
+                      <button type="button" className="hash-text text-text-accent font-semibold hover:underline" onClick={() => copy(a.sha256)}>
                         {a.sha256}
                       </button>
                     </td>

@@ -154,14 +154,14 @@ export function CaseDetail() {
       <div className="card">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-display text-lg font-semibold">Hop chain</h2>
-          <Link to="/console/geo-intel" className="text-sm text-cyan-300">
+          <Link to="/console/geo-intel" className="text-sm text-text-accent font-semibold hover:underline">
             Open Geo Forensics →
           </Link>
         </div>
         <div className="space-y-2">
           {(data.geo_hops ?? []).map((hop, i) => (
             <div key={`${hopIp(hop)}-${i}`} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/5 px-3 py-2 text-sm">
-              <span className="font-mono text-cyan-300">{hopIp(hop)}</span>
+              <span className="font-mono text-text-accent font-semibold">{hopIp(hop)}</span>
               <span>{hop.city} {hop.country}</span>
               <span className="text-text-muted">{hop.asn} {hop.org}</span>
               {(hop.is_tor_exit || hop.is_tor) && <span className="badge-novelty">TOR</span>}

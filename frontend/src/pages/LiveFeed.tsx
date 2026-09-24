@@ -144,7 +144,7 @@ export function LiveFeed() {
                 {countryFlag(item.origin_country)} {item.origin_country || 'Unknown'}
               </span>
               <span className="font-mono text-xs text-text-muted">{item.detection_time_ms ? `${Math.round(item.detection_time_ms)}ms` : '—'}</span>
-              <span className="text-cyan-300">Inspect →</span>
+              <span className="text-text-accent font-semibold group-hover:underline">Inspect →</span>
             </Link>
           ))}
         </div>
@@ -194,7 +194,7 @@ export function Overview() {
           </p>
           <p className="mt-4 text-xs uppercase tracking-[0.16em] text-text-muted">Latest sealed case</p>
           {latest ? (
-            <Link to={`/console/cases/${latest.id}`} className="mt-2 block text-cyan-300">
+            <Link to={`/console/cases/${latest.id}`} className="mt-2 block text-text-accent font-semibold hover:underline">
               {latest.subject || latest.id} · {latest.verdict} · {(latest.risk_score ?? 0).toFixed(1)}
             </Link>
           ) : (

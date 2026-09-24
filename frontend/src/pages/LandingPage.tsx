@@ -91,7 +91,6 @@ export function LandingPage() {
             <ShieldCheck className="h-4 w-4 text-white" />
           </div>
           <span className="font-display font-bold whitespace-nowrap">MailShieldAI</span>
-          <span className="hidden rounded-full bg-cyan-500/15 px-2 py-0.5 text-[10px] text-cyan-300 lg:inline">SIH26106</span>
         </Link>
         <nav className="hidden min-w-0 items-center gap-4 overflow-x-auto text-sm text-text-secondary xl:flex">
           <a href="#sandbox" className="hover:text-text-primary">Threat Sandbox</a>
@@ -119,10 +118,10 @@ export function LandingPage() {
             <br />
             Defend.
           </h1>
-          <p className="mt-5 text-xl text-cyan-300">Advanced Email Threat Intelligence</p>
+          <p className="mt-5 text-xl text-text-accent font-semibold">Advanced Email Threat Intelligence</p>
           <p className="mt-4 max-w-xl text-text-secondary">
             MailShieldAI analyzes email identity, authentication, network origin, content signals, and threat relationships
-            to uncover phishing, BEC, fraud, and suspicious activity — built for SIH 2026 problem statement 26106.
+            to uncover phishing, BEC, fraud, and suspicious activity across multi-stage attack campaigns.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a href="#sandbox" className="btn-primary">Analyze Email</a>
@@ -147,14 +146,14 @@ export function LandingPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs text-text-muted">Risk Score</p>
-              <p className="font-display text-5xl font-bold text-red-400">{scenario.risk.toFixed(1)}</p>
-              <p className="mt-2 inline-flex rounded-md border border-red-500/30 bg-red-500/10 px-2 py-1 text-[11px] font-semibold text-red-300">
+              <p className="font-display text-5xl font-bold text-text-crimson">{scenario.risk.toFixed(1)}</p>
+              <p className="mt-2 inline-flex items-center gap-1.5 badge-critical">
                 {scenario.tag} // CRITICAL
               </p>
             </div>
             <div className="text-right text-xs text-text-secondary">
               <p>ORIGIN: {scenario.origin}</p>
-              <p className="text-red-300">AUTH: SPF FAIL · DKIM FAIL</p>
+              <p className="text-text-crimson font-semibold">AUTH: SPF FAIL · DKIM FAIL</p>
               <p>NETWORK: 6 Hops Identified</p>
             </div>
           </div>
@@ -165,7 +164,7 @@ export function LandingPage() {
                 key={item.id}
                 className={cn(
                   'flex items-center justify-between rounded-xl border px-3 py-2 text-sm',
-                  item.id <= stage ? 'border-cyan-500/20 bg-cyan-500/5 text-text-primary' : 'border-white/5 text-text-muted',
+                  item.id <= stage ? 'border-border-glow bg-bg-tertiary text-text-primary font-medium' : 'border-border-primary text-text-muted',
                 )}
               >
                 <span>{item.name}</span>
@@ -177,7 +176,7 @@ export function LandingPage() {
       </section>
 
       <section id="sandbox" className="mx-auto w-[min(1180px,calc(100%-1.5rem))] pb-20">
-        <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-400">Interactive Threat Sandbox</p>
+        <p className="text-[11px] uppercase tracking-[0.22em] text-text-accent font-semibold">Interactive Threat Sandbox</p>
         <h2 className="section-title mt-2">Instant scan simulation</h2>
         <p className="section-subtitle">Four preloaded real-world scenarios. HUD animation locally, then one-click ingest into the live backend.</p>
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -189,7 +188,7 @@ export function LandingPage() {
                 setPreset(key);
                 setScanning(true);
               }}
-              className={cn('card py-4 text-left card-hover', preset === key && 'border-cyan-400/50 shadow-glow-cyan')}
+              className={cn('card py-4 text-left card-hover', preset === key && 'border-border-glow shadow-glow-cyan')}
             >
               <p className="font-display font-semibold text-text-primary">{EMAIL_PRESETS[key].label}</p>
               <p className="mt-1 text-xs text-text-muted">{EMAIL_PRESETS[key].tag} · {EMAIL_PRESETS[key].origin}</p>
@@ -197,14 +196,14 @@ export function LandingPage() {
           ))}
         </div>
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_280px]">
-          <pre className="card max-h-80 overflow-auto font-mono text-xs text-cyan-100/80">{scenario.raw}</pre>
+          <pre className="card max-h-80 overflow-auto font-mono text-xs text-text-primary bg-bg-tertiary/50 border border-border-primary">{scenario.raw}</pre>
           <div className="card flex flex-col items-center justify-center gap-4">
             <RiskGauge score={scenario.risk} size={120} />
             <div className="w-full space-y-2 text-xs text-text-secondary">
               {metrics.map((m) => (
                 <div key={m.label} className="flex justify-between">
                   <span>{m.label}</span>
-                  <span className="font-mono text-cyan-300">{m.value}</span>
+                  <span className="font-mono text-text-accent font-semibold">{m.value}</span>
                 </div>
               ))}
             </div>
@@ -285,8 +284,8 @@ export function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-white/5 py-8 text-center text-xs text-text-muted">
-        MailShieldAI · SIH26106 · FastAPI + 5 ML engines + evidence vault
+      <footer className="border-t border-border-primary py-8 text-center text-xs text-text-muted">
+        MailShieldAI · Enterprise SOC Platform · FastAPI + 5 ML engines + Merkle evidence vault
       </footer>
     </div>
   );

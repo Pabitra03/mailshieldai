@@ -41,7 +41,7 @@ export function Sidebar() {
           {!sidebarCollapsed && (
             <div className="min-w-0">
               <p className="font-display font-bold text-text-primary leading-tight">MailShieldAI</p>
-              <p className="text-[10px] uppercase tracking-[0.18em] text-cyan-400/70">SOC Mission Control</p>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-text-accent font-semibold">SOC Mission Control</p>
             </div>
           )}
         </Link>
@@ -62,17 +62,17 @@ export function Sidebar() {
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
                 cn(
-                  'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors',
-                  isActive && 'text-cyan-500 bg-cyan-500/10 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.25)]',
+                  'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-bg-tertiary transition-colors',
+                  isActive && 'text-text-accent font-semibold bg-cyan-500/10 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.25)]',
                   sidebarCollapsed && 'justify-center px-2',
                 )
               }
             >
               {({ isActive }) => (
                 <>
-                  <Icon className={cn('h-4.5 w-4.5 h-4 w-4', isActive && 'text-cyan-400')} />
+                  <Icon className={cn('h-4 w-4', isActive ? 'text-text-accent' : 'text-text-muted group-hover:text-text-primary')} />
                   {!sidebarCollapsed && <span>{item.label}</span>}
-                  {isActive && !sidebarCollapsed && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-glow-cyan" />}
+                  {isActive && !sidebarCollapsed && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-cyan-500 shadow-glow-cyan" />}
                 </>
               )}
             </NavLink>
