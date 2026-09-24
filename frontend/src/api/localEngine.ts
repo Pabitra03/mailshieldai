@@ -194,67 +194,209 @@ function scoreEmail(parsed: ReturnType<typeof parseRawEmail>, raw: string): {
 } {
   const hay = `${parsed.subject} ${parsed.sender} ${parsed.body_text} ${raw}`.toLowerCase();
   const shap: ShapFeature[] = [];
-  let header = 8;
-  let intent = 6;
-  let url = 4;
-  let novelty = 3;
 
+  // ── Component accumulators ──
+  let header = 5;   // Base noise floor
+  let intent = 5;
+  let url = 3;
+  let novelty = 2;
+
+  // ═══════════════════════════════════════════════════════════
+  // 1. HEADER FORENSICS — authentication failures are strong signals
+  // ═══════════════════════════════════════════════════════════
   if (parsed.spf_result === 'FAIL') {
-    header += 18;
-    shap.push({ name: 'SPF fail', feature: 'spf', value: 18, contribution: 18 });
+    header += 22;
+    shap.push({ name: 'SPF authentication failed', feature: 'spf', value: 22, contribution: 22 });
+  } else if (parsed.spf_result === 'NONE') {
+    header += 10;
+    shap.push({ name: 'SPF not configured', feature: 'spf_none', value: 10, contribution: 10 });
   }
   if (parsed.dkim_result === 'FAIL') {
-    header += 12;
-    shap.push({ name: 'DKIM fail', feature: 'dkim', value: 12, contribution: 12 });
+    header += 18;
+    shap.push({ name: 'DKIM signature failed', feature: 'dkim', value: 18, contribution: 18 });
+  } else if (parsed.dkim_result === 'NONE') {
+    header += 8;
+    shap.push({ name: 'DKIM not present', feature: 'dkim_none', value: 8, contribution: 8 });
   }
   if (parsed.dmarc_result === 'FAIL') {
-    header += 12;
-    shap.push({ name: 'DMARC fail', feature: 'dmarc', value: 12, contribution: 12 });
-  }
-  if (/(urgent|immediately|24 hours|suspended|permanently closed)/.test(hay)) {
-    intent += 22;
-    shap.push({ name: 'Urgency language', feature: 'urgency', value: 22, contribution: 22 });
-  }
-  if (/(kyc|verify account|click here|password|credential)/.test(hay)) {
-    intent += 16;
-    shap.push({ name: 'Credential harvest', feature: 'kyc', value: 16, contribution: 16 });
-  }
-  if (/(wire transfer|beneficiary|swift|invoice|from my iphone)/.test(hay)) {
-    intent += 20;
-    shap.push({ name: 'BEC finance lure', feature: 'bec', value: 20, contribution: 20 });
-  }
-  if (/(hdfc-secure|\.top\/|\.xyz|homoglyph|look-alike)/.test(hay)) {
-    url += 20;
-    shap.push({ name: 'Look-alike domain', feature: 'domain', value: 20, contribution: 20 });
-  }
-  if (/(docm|macro|zero-day|execute the attached)/.test(hay)) {
-    novelty += 24;
-    shap.push({ name: 'Novel payload', feature: 'novelty', value: 24, contribution: 24 });
-  }
-  if (/(newsletter|unsubscribe|meeting notes)/.test(hay)) {
-    intent = Math.max(0, intent - 18);
-    header = Math.max(0, header - 8);
+    header += 18;
+    shap.push({ name: 'DMARC policy failed', feature: 'dmarc', value: 18, contribution: 18 });
+  } else if (parsed.dmarc_result === 'NONE') {
+    header += 8;
+    shap.push({ name: 'DMARC not configured', feature: 'dmarc_none', value: 8, contribution: 8 });
   }
 
-  const risk = Math.max(4, Math.min(99, header * 0.9 + intent * 0.85 + url * 0.8 + novelty * 0.7));
+  // Display name spoofing — From contains name that doesn't match domain
+  const fromHeader = parsed.sender?.toLowerCase() ?? '';
+  if (/["'].*["']\s*</.test(fromHeader) && /(bank|security|admin|support|helpdesk|paypal|microsoft|google|apple)/.test(fromHeader)) {
+    header += 14;
+    shap.push({ name: 'Display name impersonation', feature: 'from_spoof', value: 14, contribution: 14 });
+  }
+
+  // Received header anomalies — localhost relay, unknown hosts
+  const receivedStr = (parsed.received_headers ?? []).join(' ').toLowerCase();
+  if (/\bunknown\b/.test(receivedStr)) {
+    header += 8;
+    shap.push({ name: 'Unknown relay in path', feature: 'unknown_relay', value: 8, contribution: 8 });
+  }
+  if (/localhost/.test(receivedStr) && parsed.received_headers && parsed.received_headers.length > 0) {
+    header += 6;
+    shap.push({ name: 'Localhost injection in path', feature: 'localhost_hop', value: 6, contribution: 6 });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // 2. INTENT / NLP — language signals for phishing & BEC
+  // ═══════════════════════════════════════════════════════════
+
+  // Urgency language — strongest intent signal
+  if (/(urgent|urgently|immediately|right away|asap|within \d+ hours?|time.?sensitive|act now|expire|expir|will be (closed|blocked|terminated|suspended|frozen|locked))/.test(hay)) {
+    intent += 24;
+    shap.push({ name: 'Urgency language detected', feature: 'urgency', value: 24, contribution: 24 });
+  }
+
+  // Credential harvesting
+  if (/(kyc|verify your? (account|identity|email)|confirm your? (identity|password|account)|reset your? password|update your? (details|credentials|information)|click here to (verify|confirm|update|login|sign)|log.?in to (verify|confirm|secure)|enter your? (password|credentials|pin|otp))/.test(hay)) {
+    intent += 22;
+    shap.push({ name: 'Credential harvest language', feature: 'credential', value: 22, contribution: 22 });
+  }
+
+  // Account threat language
+  if (/(account.*(suspend|deactivat|block|restrict|terminat|clos|limit|compromis|unauthori|unusual activity)|(suspend|deactivat|block|restrict|terminat|clos|limit|compromis).*(account|access|service))/.test(hay)) {
+    intent += 20;
+    shap.push({ name: 'Account threat language', feature: 'account_threat', value: 20, contribution: 20 });
+  }
+
+  // BEC financial lure
+  if (/(wire transfer|beneficiary|swift|invoice|payment.*(?:urgent|immediate|process)|purchase order|bank account|routing number|iban|ach transfer|from my iphone|sent from.*mobile|do not discuss|highly confidential|keep this between|don't tell anyone)/.test(hay)) {
+    intent += 26;
+    shap.push({ name: 'BEC financial fraud signals', feature: 'bec', value: 26, contribution: 26 });
+  }
+
+  // Authority impersonation
+  if (/(ceo|cfo|cto|chief|director|managing partner|board meeting|executive|chairman)\b/.test(hay) && /(urgent|confidential|wire|transfer|payment|immediately)/.test(hay)) {
+    intent += 16;
+    shap.push({ name: 'Authority impersonation', feature: 'authority', value: 16, contribution: 16 });
+  }
+
+  // Fear / consequence language
+  if (/(legal action|law enforcement|arrest|prosecut|penalty|fine of|forfeit|permanent(ly)? (clos|delet|remov|block|lock))/.test(hay)) {
+    intent += 14;
+    shap.push({ name: 'Fear & consequences', feature: 'fear', value: 14, contribution: 14 });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // 3. URL & DOMAIN ANALYSIS
+  // ═══════════════════════════════════════════════════════════
+
+  // Look-alike / suspicious TLD domains
+  if (/(hdfc-secure|\.top\/|\.xyz|\.tk|\.ml|\.ga|\.cf|\.gq|\.pw|\.buzz|\.icu|\.club|homoglyph|look-alike|verification-portal|secure-login|account-verify|update-info|banking-alerts)/.test(hay)) {
+    url += 24;
+    shap.push({ name: 'Look-alike / suspicious domain', feature: 'domain', value: 24, contribution: 24 });
+  }
+
+  // IP-based or encoded URLs
+  if (/https?:\/\/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(hay) || /%[0-9a-f]{2}/i.test(hay)) {
+    url += 14;
+    shap.push({ name: 'IP-based or encoded URL', feature: 'ip_url', value: 14, contribution: 14 });
+  }
+
+  // Shortened URLs
+  if (/(bit\.ly|tinyurl|is\.gd|t\.co|goo\.gl|ow\.ly|rebrand\.ly|short\.link)/.test(hay)) {
+    url += 12;
+    shap.push({ name: 'URL shortener detected', feature: 'short_url', value: 12, contribution: 12 });
+  }
+
+  // Multiple URLs in body
+  const urlCount = (hay.match(/https?:\/\//g) ?? []).length;
+  if (urlCount >= 3) {
+    url += 8;
+    shap.push({ name: 'Multiple URLs in body', feature: 'multi_url', value: 8, contribution: 8 });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // 4. NOVELTY / PAYLOAD ANALYSIS
+  // ═══════════════════════════════════════════════════════════
+
+  // Malicious attachment patterns
+  if (/(\.docm|\.xlsm|\.exe|\.scr|\.bat|\.cmd|\.pif|\.js\b|\.vbs|\.wsf|macro|enable macro|enable content|execute the attached|run the attached|open the attached)/.test(hay)) {
+    novelty += 28;
+    shap.push({ name: 'Malicious payload / attachment', feature: 'payload', value: 28, contribution: 28 });
+  }
+
+  // Zero-day / exploit language
+  if (/(zero.?day|vulnerability|exploit|patch|critical.*(update|fix|security)|security.*(patch|update|fix))/.test(hay)) {
+    novelty += 18;
+    shap.push({ name: 'Exploit / zero-day language', feature: 'exploit', value: 18, contribution: 18 });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // 5. NEGATIVE SIGNALS — reduce score for legitimate patterns
+  // ═══════════════════════════════════════════════════════════
+  const isLegitimate = /(newsletter|unsubscribe|meeting notes|weekly (update|digest|report|briefing)|you are receiving this|email preferences|manage subscriptions|legitimate-corp|view in browser)/.test(hay);
+
+  if (isLegitimate) {
+    intent = Math.max(0, intent - 24);
+    header = Math.max(0, header - 12);
+    url = Math.max(0, url - 10);
+  }
+
+  // SPF + DKIM + DMARC all pass is a strong legitimacy signal (if no other red flags)
+  const allAuthPass = parsed.spf_result === 'PASS' && parsed.dkim_result === 'PASS' && parsed.dmarc_result === 'PASS';
+  if (allAuthPass && !isLegitimate) {
+    // Auth passes but content is suspicious — keep intent score,
+    // just slightly reduce header forensics since auth is clean
+    header = Math.max(5, header - 6);
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // 6. COMPOSITE SCORING — weighted ensemble
+  // ═══════════════════════════════════════════════════════════
+
+  // Exponential boost when multiple strong signals coincide
+  const signalCount = shap.filter(s => (s.value ?? 0) >= 14).length;
+  const coincidenceBoost = signalCount >= 3 ? 1.15 : signalCount >= 2 ? 1.08 : 1.0;
+
+  const rawScore = (
+    header * 0.95 +    // Auth forensics
+    intent * 0.90 +    // NLP intent
+    url    * 0.85 +    // URL analysis
+    novelty * 0.80     // Novelty detection
+  ) * coincidenceBoost;
+
+  const risk = Math.max(4, Math.min(99, rawScore));
+
+  // ═══════════════════════════════════════════════════════════
+  // 7. VERDICT DECISION — separate from score
+  // ═══════════════════════════════════════════════════════════
   let verdict = 'Clean';
-  if (/(wire transfer|beneficiary|from my iphone)/.test(hay) && risk >= 55) verdict = 'BEC';
-  else if (/(docm|macro|zero-day)/.test(hay)) verdict = 'Novel';
-  else if (risk >= 70) verdict = 'Phishing';
-  else if (risk >= 36) verdict = 'Suspicious';
-  else verdict = 'Clean';
+  const hasBecSignals = /(wire transfer|beneficiary|from my iphone|swift|iban|routing number)/.test(hay);
+  const hasNovelPayload = /(docm|xlsm|exe|macro|zero.?day|exploit)/.test(hay);
+
+  if (hasBecSignals && risk >= 45) {
+    verdict = 'BEC';
+  } else if (hasNovelPayload && risk >= 40) {
+    verdict = 'Novel';
+  } else if (risk >= 65) {
+    verdict = 'Phishing';
+  } else if (risk >= 38) {
+    verdict = 'Suspicious';
+  } else if (risk >= 20) {
+    verdict = 'Low Risk';
+  } else {
+    verdict = 'Clean';
+  }
 
   shap.sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
   return {
     risk_score: Math.round(risk * 10) / 10,
     verdict,
-    is_novel: novelty >= 20 || verdict === 'Novel',
+    is_novel: novelty >= 18 || verdict === 'Novel',
     shap_explanation: shap,
     component_scores: {
-      header_forensics: Math.min(100, header * 2.1),
-      intent_nlp: Math.min(100, intent * 2.2),
-      url_scorer: Math.min(100, url * 2.4),
-      novelty: Math.min(100, novelty * 2.8),
+      header_forensics: Math.min(100, header * 1.8),
+      intent_nlp: Math.min(100, intent * 1.9),
+      url_scorer: Math.min(100, url * 2.0),
+      novelty: Math.min(100, novelty * 2.2),
     },
   };
 }

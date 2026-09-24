@@ -5,7 +5,7 @@
     "hi"
   ],
   "max_features": 20000,
-  "training_samples": 7995,
+  "training_samples": 14390,
   "note": "Baseline model. Upgrade path: fine-tune distilbert-base-multilingual-cased",
   "upgrade_model": "distilbert-base-multilingual-cased",
   "upgrade_alt": "ai4bharat/indic-bert"

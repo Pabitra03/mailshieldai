@@ -82,9 +82,9 @@ IT Security Division
   },
   clean: {
     label: 'Safe Newsletter',
-    tag: 'CLEAR',
+    tag: 'CLEAN',
     origin: 'Canada',
-    risk: 33.8,
+    risk: 8.5,
     raw: `From: "Industry Weekly" <newsletter@legitimate-corp.com>
 To: subscriber@example.com
 Subject: Weekly Industry Update - September Edition

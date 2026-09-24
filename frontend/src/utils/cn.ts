@@ -31,10 +31,10 @@ export function formatTime(dateString?: string | null): string {
 
 export function getRiskColor(score?: number | null): string {
   const n = score ?? 0;
-  if (n >= 70) return 'text-red-400';
-  if (n >= 45) return 'text-amber-400';
-  if (n >= 25) return 'text-cyan-400';
-  return 'text-emerald-400';
+  if (n >= 70) return 'text-text-crimson font-semibold';
+  if (n >= 45) return 'text-text-amber font-semibold';
+  if (n >= 25) return 'text-text-accent font-semibold';
+  return 'text-text-emerald font-semibold';
 }
 
 export function getRiskBar(score?: number | null): string {

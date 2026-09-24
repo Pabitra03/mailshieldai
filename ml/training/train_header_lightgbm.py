@@ -50,29 +50,44 @@ def extract_header_features(row: dict) -> dict:
 
     features = {}
 
-    # SPF/DKIM/DMARC — derive from text if present
-    features["spf_fail"] = 1 if "spf=fail" in text or "spf: fail" in text else 0
-    features["dkim_fail"] = 1 if "dkim=fail" in text or "dkim: fail" in text else 0
-    features["dmarc_fail"] = 1 if "dmarc=fail" in text or "dmarc: fail" in text else 0
-    features["spf_none"] = 1 if "spf=none" in text or "spf: none" in text else 0
-    features["dkim_none"] = 1 if "dkim=none" in text or "dkim: none" in text else 0
+    spf_val = str(row.get("spf_result", "")).lower()
+    dkim_val = str(row.get("dkim_result", "")).lower()
+    dmarc_val = str(row.get("dmarc_result", "")).lower()
 
-    # Hop count proxy — count "received" occurrences
-    features["hop_count"] = text.count("received:")
-    features["hop_count_proxy"] = min(text.count("from "), 10)
+    # SPF/DKIM/DMARC — check structured fields first, then fallback to text
+    features["spf_fail"] = 1 if "fail" in spf_val or "spf=fail" in text or "spf: fail" in text else 0
+    features["dkim_fail"] = 1 if "fail" in dkim_val or "dkim=fail" in text or "dkim: fail" in text else 0
+    features["dmarc_fail"] = 1 if "fail" in dmarc_val or "dmarc=fail" in text or "dmarc: fail" in text else 0
+    features["spf_none"] = 1 if "none" in spf_val or "spf=none" in text or "spf: none" in text else 0
+    features["dkim_none"] = 1 if "none" in dkim_val or "dkim=none" in text or "dkim: none" in text else 0
+
+    # Hop count — count received headers or text proxy
+    received = row.get("received_headers", [])
+    if isinstance(received, list) and len(received) > 0:
+        features["hop_count"] = len(received)
+        features["hop_count_proxy"] = min(len(received), 10)
+    else:
+        features["hop_count"] = text.count("received:")
+        features["hop_count_proxy"] = min(text.count("from "), 10)
 
     # Display name vs From mismatch proxy
-    features["has_display_name_mismatch"] = 1 if re.search(
-        r'"[^"]+"\s*<[^>]+>', text
+    sender = str(row.get("sender", "")).lower()
+    features["has_display_name_mismatch"] = 1 if (
+        re.search(r'"[^"]+"\s*<[^>]+>', text) or
+        (re.search(r'"[^"]+"\s*<[^>]+>', sender) and not any(k in sender for k in ["noreply", "support"]))
     ) else 0
 
     # Reply-To mismatch proxy
-    features["reply_to_mismatch"] = 1 if "reply-to:" in text and "from:" in text else 0
+    headers = row.get("headers_json", {})
+    if isinstance(headers, dict) and "reply-to" in [k.lower() for k in headers.keys()]:
+        features["reply_to_mismatch"] = 1
+    else:
+        features["reply_to_mismatch"] = 1 if "reply-to:" in text and "from:" in text else 0
 
     # Suspicious TLD detection
     features["has_suspicious_tld"] = 0
     for tld in SUSPICIOUS_TLDS:
-        if tld in text:
+        if tld in text or tld in sender:
             features["has_suspicious_tld"] = 1
             break
 
